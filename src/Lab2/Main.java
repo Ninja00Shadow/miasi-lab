@@ -7,7 +7,8 @@ public class Main {
     public static void main(String[] args) {
         // create a CharStream that reads from standard input
 //        CharStream input = CharStreams.fromStream(System.in);
-        CharStream input = CharStreams.fromString("(2 + 3) * (11 - (4 + 1))");
+        CharStream input = CharStreams.fromString("(2 + 3) * (11 - (4 + 3!))");
+//        CharStream input = CharStreams.fromString("2 + 3 * 11 - 4 + Z 1");
 
         // create a lexer that feeds off of input CharStream
         CalcLexer lexer = new CalcLexer(input);
@@ -20,7 +21,7 @@ public class Main {
 
         // start parsing at the equation rule
         ParseTree tree = parser.equation();
-        // System.out.println(tree.toStringTree());
+//        System.out.println(tree.toStringTree(parser));
 
         // create a visitor to traverse the parse tree
         CalcVisitor visitor = new CalcVisitor();
