@@ -1,5 +1,6 @@
 package Lab3.interpreter;
 
+import Lab3.SymbolTable.FuncDefType;
 import Lab3.SymbolTable.LocalSymbols;
 import Lab3.grammar.*;
 import org.antlr.v4.runtime.CharStream;
@@ -7,13 +8,17 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class CalculateVisitor extends firstBaseVisitor<Integer> {
     private LocalSymbols<Integer> localSymbols;
+    private final HashMap<String, FuncDefType> functions = new HashMap<>();
 
     private TokenStream tokStream = null;
-    private CharStream input=null;
+    private CharStream input = null;
+
     public CalculateVisitor(CharStream inp) {
         super();
         this.input = inp;
@@ -23,27 +28,42 @@ public class CalculateVisitor extends firstBaseVisitor<Integer> {
         super();
         this.tokStream = tok;
     }
+
     public CalculateVisitor(CharStream inp, TokenStream tok) {
         super();
         this.input = inp;
         this.tokStream = tok;
     }
+
     private String getText(ParserRuleContext ctx) {
         int a = ctx.start.getStartIndex();
         int b = ctx.stop.getStopIndex();
-        if(input==null) throw new RuntimeException("Input stream undefined");
-        return input.getText(new Interval(a,b));
+        if (input == null) throw new RuntimeException("Input stream undefined");
+        return input.getText(new Interval(a, b));
     }
+
+    public void pushScope() {
+        localSymbols.enterScope();
+    }
+
+    public void popScope() {
+        localSymbols.leaveScope();
+    }
+
+    public void setVariable(String paramName, Integer value) {
+        localSymbols.newSymbol(paramName);
+        localSymbols.setSymbol(paramName, value);
+    }
+
     @Override
     public Integer visitIf_stat(firstParser.If_statContext ctx) {
         Integer result = 0;
-        if (visit(ctx.cond)!=0) {
+        if (visit(ctx.cond) != 0) {
             result = visit(ctx.then);
-        } else if (ctx.elseif!=null && visit(ctx.econd)!=0) {
+        } else if (ctx.elseif != null && visit(ctx.econd) != 0) {
             result = visit(ctx.elseif);
-        }
-        else {
-            if(ctx.else_ != null)
+        } else {
+            if (ctx.else_ != null)
                 result = visit(ctx.else_);
         }
         return result;
@@ -71,7 +91,7 @@ public class CalculateVisitor extends firstBaseVisitor<Integer> {
 
     @Override
     public Integer visitBinOp(firstParser.BinOpContext ctx) {
-        Integer result=0;
+        Integer result = 0;
         switch (ctx.op.getType()) {
             case firstLexer.ADD:
                 result = visit(ctx.l) + visit(ctx.r);
@@ -150,9 +170,9 @@ public class CalculateVisitor extends firstBaseVisitor<Integer> {
 
     @Override
     public Integer visitBlock_real(firstParser.Block_realContext ctx) {
-        localSymbols.enterScope();
+        pushScope();
         Integer result = super.visitBlock_real(ctx);
-        localSymbols.leaveScope();
+        popScope();
         return result;
     }
 
@@ -171,5 +191,34 @@ public class CalculateVisitor extends firstBaseVisitor<Integer> {
     @Override
     public Integer visitId_tok(firstParser.Id_tokContext ctx) {
         return localSymbols.getSymbol(ctx.ID().getText());
+    }
+
+    @Override
+    public Integer visitFunc_decl(firstParser.Func_declContext ctx) {
+        String name = ctx.fname.getText();
+        FuncDefType func = new FuncDefType();
+        func.addParam(ctx.arg.getText());
+        func.setBody(ctx.body);
+
+        functions.put(name, func);
+
+        return 0;
+    }
+
+    @Override
+    public Integer visitUnaryLogicOp(firstParser.UnaryLogicOpContext ctx) {
+        return visit(ctx.expr()) > 0 ? 0 : 1;
+    }
+
+    @Override
+    public Integer visitFunc_call(firstParser.Func_callContext ctx) {
+        String name = ctx.ID().getText();
+        Integer arg = visit(ctx.expr());
+        FuncDefType func = functions.get(name);
+
+        func.addArgument(arg);
+
+        Integer result = func.invoke(this);
+        return result;
     }
 }
