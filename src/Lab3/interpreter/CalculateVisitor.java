@@ -1,12 +1,17 @@
 package Lab3.interpreter;
 
+import Lab3.SymbolTable.LocalSymbols;
 import Lab3.grammar.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
 
+import java.util.Objects;
+
 public class CalculateVisitor extends firstBaseVisitor<Integer> {
+    private LocalSymbols<Integer> localSymbols;
+
     private TokenStream tokStream = null;
     private CharStream input=null;
     public CalculateVisitor(CharStream inp) {
@@ -34,6 +39,8 @@ public class CalculateVisitor extends firstBaseVisitor<Integer> {
         Integer result = 0;
         if (visit(ctx.cond)!=0) {
             result = visit(ctx.then);
+        } else if (ctx.elseif!=null && visit(ctx.econd)!=0) {
+            result = visit(ctx.elseif);
         }
         else {
             if(ctx.else_ != null)
@@ -86,4 +93,83 @@ public class CalculateVisitor extends firstBaseVisitor<Integer> {
         return result;
     }
 
+    @Override
+    public Integer visitVar_decl_stat(firstParser.Var_decl_statContext ctx) {
+        return super.visitVar_decl_stat(ctx);
+    }
+
+    @Override
+    public Integer visitWhile_stat(firstParser.While_statContext ctx) {
+        while (ctx.cond != null && visit(ctx.cond) != 0) {
+            visit(ctx.block());
+        }
+        return 0;
+    }
+
+    @Override
+    public Integer visitVar_decl(firstParser.Var_declContext ctx) {
+//        return super.visitVar_decl(ctx);
+        localSymbols.newSymbol(ctx.ID().getText());
+        localSymbols.setSymbol(ctx.ID().getText(), visit(ctx.expr()));
+        return localSymbols.getSymbol(ctx.ID().getText());
+    }
+
+    @Override
+    public Integer visitLogicOp(firstParser.LogicOpContext ctx) {
+        return switch (ctx.op.getType()) {
+            case firstLexer.AND -> visit(ctx.l) > 0 && visit(ctx.r) > 0 ? 1 : 0;
+            case firstLexer.OR -> visit(ctx.l) > 0 || visit(ctx.r) > 0 ? 1 : 0;
+            default -> 0;
+        };
+    }
+
+    @Override
+    public Integer visitAssign(firstParser.AssignContext ctx) {
+        Integer value = visit(ctx.expr());
+        localSymbols.setSymbol(ctx.ID().getText(), value);
+        return value;
+    }
+
+    @Override
+    public Integer visitCompOp(firstParser.CompOpContext ctx) {
+        return switch (ctx.op.getType()) {
+            case firstLexer.LT -> visit(ctx.l) < visit(ctx.r) ? 1 : 0;
+            case firstLexer.GT -> visit(ctx.l) > visit(ctx.r) ? 1 : 0;
+            case firstLexer.LE -> visit(ctx.l) <= visit(ctx.r) ? 1 : 0;
+            case firstLexer.GE -> visit(ctx.l) >= visit(ctx.r) ? 1 : 0;
+            case firstLexer.EQ -> Objects.equals(visit(ctx.l), visit(ctx.r)) ? 1 : 0;
+            case firstLexer.NEQ -> !Objects.equals(visit(ctx.l), visit(ctx.r)) ? 1 : 0;
+            default -> 0;
+        };
+    }
+
+    @Override
+    public Integer visitBlock_single(firstParser.Block_singleContext ctx) {
+        return super.visitBlock_single(ctx);
+    }
+
+    @Override
+    public Integer visitBlock_real(firstParser.Block_realContext ctx) {
+        localSymbols.enterScope();
+        Integer result = super.visitBlock_real(ctx);
+        localSymbols.leaveScope();
+        return result;
+    }
+
+    @Override
+    public Integer visitProg(firstParser.ProgContext ctx) {
+//        return super.visitProg(ctx);
+        localSymbols = new LocalSymbols<>();
+        return super.visitProg(ctx);
+    }
+
+    @Override
+    public Integer visitExpr_stat(firstParser.Expr_statContext ctx) {
+        return super.visitExpr_stat(ctx);
+    }
+
+    @Override
+    public Integer visitId_tok(firstParser.Id_tokContext ctx) {
+        return localSymbols.getSymbol(ctx.ID().getText());
+    }
 }
