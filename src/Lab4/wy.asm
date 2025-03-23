@@ -1,39 +1,33 @@
         DD x
         PUSH #2
-        POP x
-        Terminal node:;
+        POP [x]
+
         DD y
         PUSH #10
-        POP y
-        Terminal node:;
+        POP [y]
+
     PUSH [x]
     PUSH #3
     SUB
-    JE elsex3
-        Terminal node:{
-                Terminal node:>
-                    PUSH #1
-                    Terminal node:||
-                    PUSH #0
-                Terminal node:;
+    PUSH #GT_TRUE_GT0
+    JG
+    PUSH #0
+    PUSH #GT_END_GT0
+    JMP
+    GT_TRUE_GT0:
+        PUSH #1
+    GT_END_GT0:
+    PUSH #else
+    JE
                 PUSH #1
                 POP [y]
-                Terminal node:;
-        Terminal node:}
-    JMP endx3
-    elsex3:
-        Terminal node:{
-                Terminal node:>
-                    PUSH #1
-                    Terminal node:&&
-                    PUSH #0
-                Terminal node:;
+
+
+    PUSH #end
+    JMP
+    else:
                 PUSH #3
                 POP [y]
-                Terminal node:;
-        Terminal node:}
-    endx3:
-        Terminal node:>
-        PUSH [y]
-        Terminal node:;
-    Terminal node:<EOF>
+
+
+    end:

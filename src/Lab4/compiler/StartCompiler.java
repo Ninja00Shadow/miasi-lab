@@ -18,7 +18,7 @@ public class StartCompiler {
         CharStream inp = null;
 
         try {
-            inp = CharStreams.fromFileName("src/Lab3/we.second");
+            inp = CharStreams.fromFileName("src/Lab4/we.second");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -31,13 +31,13 @@ public class StartCompiler {
 
         //st group
         STGroup.trackCreationEvents = true;
-        STGroup group = new STGroupFile("src/Lab3/compiler/stack.stg");
+        STGroup group = new STGroupFile("src/Lab4/compiler/stack.stg");
 
         EmitVisitor em = new EmitVisitor(group);
         ST res = em.visit(tree);
         System.out.println(res.render());
         try {
-            var wr = new FileWriter("src/Lab3/wy.asm");
+            var wr = new FileWriter("src/Lab4/wy.asm");
             wr.write(res.render());
             wr.close();
         } catch (IOException e) {
