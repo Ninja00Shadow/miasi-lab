@@ -31,18 +31,18 @@ public class StartCompiler {
 
         //st group
         STGroup.trackCreationEvents = true;
-        STGroup group = new STGroupFile("src/Lab4/compiler/stack.stg");
+        STGroup group = new STGroupFile("src/Lab4/compiler/register.stg");
 
         EmitVisitor em = new EmitVisitor(group);
         ST res = em.visit(tree);
         System.out.println(res.render());
         try {
-            var wr = new FileWriter("src/Lab4/wy.asm");
+            var wr = new FileWriter("src/Lab4/wy2.asm");
             wr.write(res.render());
             wr.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        res.inspect();
+//        res.inspect();
     }
 }

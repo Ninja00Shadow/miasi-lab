@@ -8,11 +8,36 @@ int(i) ::= <<
 MOV A,#<i>
 >>
 
+id(id) ::= <<
+MOV A, [<id>]
+>>
+
+decl(id) ::= <<
+DD <id>
+>>
+
+var_decl_init(id, p) ::= <<
+DD <id>
+<p>
+MOV [<id>], A
+>>
+
+assign(id, p) ::= <<
+    <p>
+    MOV [<id>], A
+>>
+
+//twoop(p1, p2) ::= <<
+//<p2>
+//PUSH A
+//<p1>
+//POP B
+//>>
+
 twoop(p1, p2) ::= <<
 <p2>
-PUSH A
+MOV B, A
 <p1>
-POP B
 >>
 
 dodaj(p1,p2) ::= <<
@@ -20,6 +45,131 @@ dodaj(p1,p2) ::= <<
 ADD A,B
 >>
 
-dek(n) ::= <<
-DD <n>
+odejmij(p1,p2) ::= <<
+<twoop(p1,p2)>
+SUB A, B
+>>
+
+mnoz(p1,p2) ::= <<
+<twoop(p1,p2)>
+MUL A, B
+>>
+
+dziel(p1,p2) ::= <<
+<twoop(p1,p2)>
+DIV A, B
+>>
+
+lt(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+CMP A, B
+JL LT_TRUE_<suffix>
+MOV A, #0
+JMP LT_END_<suffix>
+LT_TRUE_<suffix>:
+    MOV A, #1
+LT_END_<suffix>:
+>>
+
+le(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+CMP A, B
+JLE LE_TRUE_<suffix>
+MOV A, #0
+JMP LE_END_<suffix>
+LE_TRUE_<suffix>:
+    MOV A, #1
+LE_END_<suffix>:
+>>
+
+gt(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+CMP A, B
+JG GT_TRUE_<suffix>
+MOV A, #0
+JMP GT_END_<suffix>
+GT_TRUE_<suffix>:
+    MOV A, #1
+GT_END_<suffix>:
+>>
+
+ge(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+CMP A, B
+JGE GE_TRUE_<suffix>
+MOV A, #0
+JMP GE_END_<suffix>
+GE_TRUE_<suffix>:
+    MOV A, #1
+GE_END_<suffix>:
+>>
+
+eq(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+CMP A, B
+JNE NE_TRUE_<suffix>
+MOV A, #0
+JMP NE_END_<suffix>
+NE_TRUE_<suffix>:
+    MOV A, #1
+NE_END_<suffix>:
+>>
+
+ne(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+CMP A, B
+JE EQ_TRUE_<suffix>
+MOV A, #0
+JMP EQ_END_<suffix>
+EQ_TRUE_<suffix>:
+    MOV A, #1
+EQ_END_<suffix>:
+>>
+
+nie(p,suffix) ::= <<
+<p>
+MOV B,A
+MOV A,#0
+CMP A,B
+JE NOT_TRUE_<suffix>
+MOV A,#0
+JMP NOT_END_<suffix>
+NOT_TRUE_<suffix>:
+    MOV A,#1
+NOT_END_<suffix>:
+>>
+
+if_no_else(cond, thenBlock, endLabel) ::= <<
+<cond>
+MOV B,A
+MOV A,#0
+CMP A,B
+JE <endLabel>
+<thenBlock>
+<endLabel>:
+>>
+
+if_else(cond, thenBlock, elseBlock, elseLabel, endLabel) ::= <<
+<cond>
+MOV B,A
+MOV A,#0
+CMP A,B
+JE <elseLabel>
+<thenBlock>
+JMP <endLabel>
+<elseLabel>:
+<elseBlock>
+<endLabel>:
+>>
+
+while_loop(cond, body, startLabel, endLabel) ::= <<
+<startLabel>:
+<cond>
+MOV B,A
+MOV A,#0
+CMP A,B
+JE <endLabel>
+<body>
+JMP <startLabel>
+<endLabel>:
 >>
