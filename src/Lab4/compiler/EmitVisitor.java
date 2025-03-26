@@ -6,13 +6,19 @@ import org.stringtemplate.v4.STGroup;
 import Lab4.grammar.firstBaseVisitor;
 import Lab4.grammar.firstParser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EmitVisitor extends firstBaseVisitor<ST> {
     private final STGroup stGroup;
     private int labelCounter = 0;
 
+    private ST declarations;
+
     public EmitVisitor(STGroup group) {
         super();
         this.stGroup = group;
+        this.declarations = group.getInstanceOf("decls");
     }
 
     private String newLabel(String base) {
@@ -31,6 +37,14 @@ public class EmitVisitor extends firstBaseVisitor<ST> {
         return aggregate;
     }
 
+    @Override
+    public ST visitProg(firstParser.ProgContext ctx) {
+        ST prog =  super.visitProg(ctx);
+        ST st = stGroup.getInstanceOf("deflt");
+        st.add("elem", declarations);
+        st.add("elem", prog);
+        return st;
+    }
 
     @Override
     public ST visitTerminal(TerminalNode node) {
@@ -111,9 +125,14 @@ public class EmitVisitor extends firstBaseVisitor<ST> {
 
     @Override
     public ST visitVar_decl(firstParser.Var_declContext ctx) {
-        ST st = stGroup.getInstanceOf("var_decl_init");
-        st.add("id", ctx.ID().getText()).add("p", visit(ctx.expr()));
-        return st;
+        declarations.add("id", ctx.ID().getText());
+
+        if (ctx.expr() != null) {
+            ST st = stGroup.getInstanceOf("assign");
+            st.add("id", ctx.ID().getText()).add("p", visit(ctx.expr()));
+            return st;
+        }
+        return null;
     }
 
     @Override
@@ -135,10 +154,5 @@ public class EmitVisitor extends firstBaseVisitor<ST> {
                     .add("endLabel", endLabel);
         }
         return st;
-    }
-
-    @Override
-    public ST visitWhile_stat(firstParser.While_statContext ctx) {
-        return super.visitWhile_stat(ctx);
     }
 }

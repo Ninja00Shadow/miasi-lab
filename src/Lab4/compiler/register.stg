@@ -16,6 +16,10 @@ decl(id) ::= <<
 DD <id>
 >>
 
+decls(id) ::= <<
+<id:decl(id); separator="\n">
+>>
+
 var_decl_init(id, p) ::= <<
 DD <id>
 <p>
@@ -23,22 +27,22 @@ MOV [<id>], A
 >>
 
 assign(id, p) ::= <<
-    <p>
-    MOV [<id>], A
+<p>
+MOV [<id>], A
+>>
+
+twoop(p1, p2) ::= <<
+<p2>
+PUSH A
+<p1>
+POP B
 >>
 
 //twoop(p1, p2) ::= <<
 //<p2>
-//PUSH A
+//MOV B, A
 //<p1>
-//POP B
 //>>
-
-twoop(p1, p2) ::= <<
-<p2>
-MOV B, A
-<p1>
->>
 
 dodaj(p1,p2) ::= <<
 <twoop(p1,p2)>
