@@ -1,4 +1,4 @@
-package Lab4.SymbolTable;
+package Lab5.SymbolTable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

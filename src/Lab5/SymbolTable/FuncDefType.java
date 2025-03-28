@@ -1,4 +1,4 @@
-package Lab4.SymbolTable;
+package Lab5.SymbolTable;
 
 import Lab3.interpreter.CalculateVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;

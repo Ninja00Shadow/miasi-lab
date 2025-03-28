@@ -1,0 +1,193 @@
+group pierwszy;
+
+deflt(elem) ::= <<
+    <elem; separator="\n">
+>>
+
+int(i) ::= <<
+PUSH #<i>
+>>
+
+twoop(p1, p2) ::= <<
+<p1>
+<p2>
+>>
+
+dodaj(p1,p2) ::= <<
+<twoop(p1,p2)>
+ADD
+>>
+
+odejmij(p1,p2) ::= <<
+<twoop(p1,p2)>
+SUB
+>>
+
+mnoz(p1,p2) ::= <<
+<twoop(p1,p2)>
+MUL
+>>
+
+dziel(p1,p2) ::= <<
+<twoop(p1,p2)>
+DIV
+>>
+
+lt(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+SUB
+PUSH #LT_TRUE_<suffix>
+JL
+PUSH #0
+PUSH #LT_END_<suffix>
+JMP
+LT_TRUE_<suffix>:
+    PUSH #1
+LT_END_<suffix>:
+>>
+
+le(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+SUB
+PUSH #LE_TRUE_<suffix>
+JLE
+PUSH #0
+PUSH #LE_END_<suffix>
+JMP
+LE_TRUE_<suffix>:
+    PUSH #1
+LE_END_<suffix>:
+>>
+
+gt(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+SUB
+PUSH #GT_TRUE_<suffix>
+JG
+PUSH #0
+PUSH #GT_END_<suffix>
+JMP
+GT_TRUE_<suffix>:
+    PUSH #1
+GT_END_<suffix>:
+>>
+
+ge(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+SUB
+PUSH #GE_TRUE_<suffix>
+JGE
+PUSH #0
+PUSH #GE_END_<suffix>
+JMP
+GE_TRUE_<suffix>:
+    PUSH #1
+GE_END_<suffix>:
+>>
+
+eq(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+SUB
+PUSH #EQ_TRUE_<suffix>
+JE
+PUSH #0
+PUSH #EQ_END_<suffix>
+JMP
+EQ_TRUE_<suffix>:
+    PUSH #1
+EQ_END_<suffix>:
+>>
+
+ne(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+SUB
+PUSH #NE_TRUE_<suffix>
+JNE
+PUSH #0
+PUSH #NE_END_<suffix>
+JMP
+NE_TRUE_<suffix>:
+    PUSH #1
+NE_END_<suffix>:
+>>
+
+and(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+PUSH #AND_FALSE_<suffix>
+JE
+PUSH #AND_FALSE_<suffix>
+JE
+PUSH #1
+PUSH #AND_END_<suffix>
+JMP
+AND_FALSE_<suffix>:
+    PUSH #0
+AND_END_<suffix>:
+>>
+
+or(p1,p2,suffix) ::= <<
+<twoop(p1,p2)>
+PUSH #OR_TRUE_<suffix>
+JNE
+PUSH #OR_TRUE_<suffix>
+JNE
+PUSH #0
+PUSH #OR_END_<suffix>
+JMP
+OR_TRUE_<suffix>:
+    PUSH #1
+OR_END_<suffix>:
+>>
+
+nie(p) ::= <<
+<p>
+NOT
+>>
+
+assign(id, p) ::= <<
+<p>
+POP [<id>]
+>>
+
+dek(n) ::= <<
+DD <n>
+>>
+
+var_decl_init(id, p) ::= <<
+DD <id>
+<p>
+POP [<id>]
+>>
+
+id(id) ::= <<
+PUSH [<id>]
+>>
+
+if_no_else(cond, thenBlock, endLabel) ::= <<
+<cond>
+PUSH #<endLabel>
+JE
+<thenBlock>
+<endLabel>:
+>>
+
+if_else(cond, thenBlock, elseBlock, elseLabel, endLabel) ::= <<
+<cond>
+PUSH #<elseLabel>
+JE
+<thenBlock>
+PUSH #<endLabel>
+JMP
+<elseLabel>:
+<elseBlock>
+<endLabel>:
+>>
+
+while_loop(cond, body, startLabel, endLabel) ::= <<
+<startLabel>:
+<cond>
+JE <endLabel>
+<body>
+JMP <startLabel>
+<endLabel>:
+>>
